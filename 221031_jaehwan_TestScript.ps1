@@ -1,0 +1,1 @@
+﻿Get-EventLog System -Newest 3 |Format-List
