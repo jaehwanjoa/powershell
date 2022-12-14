@@ -1,0 +1,40 @@
+{
+        "parameters": {
+            "tagName": {
+            "type": "String",
+            "metadata": {
+                "displayName": "태그 이름",
+                "description": "서비스 중요도"
+        },
+            "tagValue": {
+                "type": "array",
+                "metadata": {
+                    "displayName": "허용되는 보안 등급 태그 리스트 입니다.",
+                    "description": "서비스별 중요도를 정의(예: High, Medium, Low등)"
+                },
+                "allowedValues": [
+                    "High",
+                    "Medium",
+                    "Low"
+                ]
+            }
+        },
+        "policyRule": {
+            "if": { 
+            "allOf": [
+                {
+                            "field": "type",
+                            "equals": "Microsoft.Compute/virtualMachines"
+                        },
+                        {
+                        "field": "[concat('tags[', parameters('tagName'), ']')]",
+                        "notIn": "[parameters('tagValue')]"
+                    }
+            ]
+            },
+            "then": {
+                "effect": "audit"
+            }
+        }
+    }
+}
