@@ -1,0 +1,381 @@
+# powershell version
+$PSVersionTable
+
+# 명령어 검색. -Verb는 동사로써 New / Get / Remove 등이 해당되며, Noun은 명사로 AzVM / NetAdapter등을 칭한다. 
+Get-Command -Verb New -Noun Net*
+# 명령어를 검색하였다면, Get-Help 명령어로 도움말을 확인할 수 있다.
+Get-Help New-NetRoute
+
+# 실행 정책 확인 ex)Server2019/2016 -> RemoteSigned, Windows10 -> Restricted
+Get-ExecutionPolicy -Scope CurrentUser
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
+
+# 실행 중인 프로세스 확인 및 종료 and 시작(w32time은 시간 프로세스)
+Get-Process  -Name w32time | Stop-Service 
+Get-Service -Name RemoteAccess |Strop-Service or Get-Service | Out-File D:\serviceinfo.txt
+Start-Service -Name W32Time
+
+# 파일 정보 읽어오기
+Get-Content -Path D:\serviceinfo.txt
+
+# 가상 머신 호스트네임 확인 후 종료
+Get-AzVm -Status | ft
+Stop-AzVM -ResourceGroupName TestMDC -Name Web1TestMDC
+
+# Powershell의 원 라이너는 하나의 연속 파이프라인이며, 반드시 하나의 커멘드라인이 있는 명령은 아님. |는 powershell에서 자연 줄 바꿈이 허용되는 문자로 여러 줄로 작성되었더라도 원라이너임
+# 줄 연속 문자로 `(역 따음표)를 사용하는 경우가 있지만, 가능한 이러한 사용을 피할 것을 권장하고 있음
+Get-Service -Name w32time | Select-Object -Propert *
+Get-Service | Select-Object -First 5 or -Last 5, Get-Process | Select-Object -First 5 -Property Id, ProcessName
+Get-Service | Where-Object {$_.Name.Length -gt 5}
+ # 다음 예제는 연속 파이프라인이 아니기에 원라이너가 아님. 한 줄에서 구분된 별도의 두 명령어임
+ $Service = w32time; Get-Service -Name $Service
+
+ # 특정 결과 값에 대한 출력 필터링(원라이너). Where-Object 특정 속성 값에 맞춰 필터링, Select-Object는 KQL의 project와 같음. 출력 내용을 재배열함
+ Get-Service | Where-Object Status -contains Running | Select-Object DisplayName, Name, Status
+
+ # Select-String은 grep과 같은 기능이다. -InputObject는 Get-EventLog의 Message 내용을 가져온다. -Paatern은 Message 내용이 "시스템"과 일치한지를 확인한다.
+ $eventlog = Get-EventLog -LogName System -Newest 3
+ $eventlog | Select-String -InputObject {$_.Message} -Pattern "시스템"
+
+# 특정 컴퓨터나 사이트의 연결과 응답을 테스트하는 명령어
+
+
+# 해시 테이블의 구조
+$ageList = @{} #해시 테이블은 배열과 유사항지만 기본 키/값 저장소. 해시 테이블은 괄호()대신 중괄호{}를 사용해야함. 해시 테이블 없음을 선언해야함
+# Array vs Hashtable 배열은 목록이나 컬렉션을 저장하고 검색하려는 경우 유용. ex) $list = Get-ChildItem, 해시테이블은 이름을 항목으로 저장하고 검색하려는 경우 유용. ex)$hash = @{}
+$agelist = @{}
+$key = 'Kebin'
+$value = 36
+$agelist.add($key, $value)   or $agelist['key'] = $value
+$agelist.add('alex', 9)  or $agelist['Alex'] = 9
+# 해시의 전체 리스트 출력은 $agelist, 이름으로 검색하려면 $agelist['kevin'] 
+# 속성 기반 액세스를 사용하면 해시 테이블을 간단하게 작성 가능
+$ageList = @{}
+$ageList.Kevin = 35
+$ageList.Alex = 9
+
+#해시 테이블 선언 없이 바로 개체를 지정할 수도 있음
+$person = @{
+    name = 'Kebin'
+    age = 36
+}
+$person.city = 'Austin'
+$person.state = 'TX'
+# 키 제거 및 지우기
+$ageList.remove('age')
+
+# 반복 루프문 배열을 $letterArray로 만들고 a,b,c,d로 초기화. foreach문은 $letterArray의 값만큼 반복하고 이를 $leeter에 저장. 저장 값은 Write-Host로 문자로 지정
+$letterArray = "a", "b","c","d"
+foreach ($letter in $letterArray){
+Write-Host $letter
+}
+
+# 스플래팅 cmdlet에 모든 요소를 한줄로 정의하면 이해하기 어렵고, 유지관리도 어려움. 스플랫 호출 시 $대신에 @부호를 사용하면 스플랫 작업이 호출됨.
+Add-DhcpServerv4Scope -Name 'TestNetwork' -StartRange'10.0.0.2' -EndRange '10.0.0.254' -SubnetMask '255.255.255.0' -Description 'Network for testlab' -LeaseDuration (New-TimeSpan -Days 8) -Type "Both"
+$DHCPscope = @{
+    Name = 'TestNetwork'
+    StartRange = '10.0.0.2'
+    EndRange = '10.0.0.254'
+    SubnetMask = '255.255.255.0'
+    Description = 'Network for testlab'
+    LeaseDuration = (New-TimeSpan -Days 8)
+    Type = "Both"
+}
+Add-DhcpServer4Scope @DHCPscope
+
+# 깔끔한 코드 스플래팅
+$log = @{ Path = 'D:\logfile.log'}
+Add-Content "logging this command!"@log
+
+# 중첩 해시 테이블
+$person = @{ 
+name='Kebin'
+age= 36
+}
+$person.location = @{}
+$person.location.city = 'Austin'
+$person.location.state = 'TX'
+Or
+$person = @{
+    name = 'Kevin'
+    age  = 36
+    location = @{
+        city  = 'Austin'
+        state = 'TX'
+    }
+}
+# 중첩된 해시 테이블 확인 명령어
+$person | ConvertTo-Json
+
+# 해시 테이블을 읽고 파일에 쓰기
+$path = 'D:\export_csv.txt'
+$person | ForEach-Object{[pscustomobject]$_} | Export-Csv -Path $path
+
+# 키는 단순한 문자열으로써 어느 문자든 따음표를 붙여서 키로 만들 수 있음
+$person = @{
+    'full name' = 'kevin Marquette'
+    '#' = 3987
+}
+Or
+$person = @{'full name' = 'kevin Marquette'; '#' = 3987}
+$person['full name']
+
+#비교 연사자 -eq(equal이라 부르며 대소문자를 구분하지 않음) -ceq(대소문자를 구분함)
+"abc" -eq "Abc" or "abc" -eq "Abc"
+
+# 범위 연사자를 사용하여 변수에서 1부터 10까지 숫자 저장
+$Numbers = 1..10
+$Numbers -contains 10
+10 -in $Numbers
+
+# 값 교체. saturday라는 단어를 Sat으로 바꿈(대소문자 구분하지 않음)
+'SQL Saturday - Basoton Rouge' -replace 'saturday', 'Sat'
+# 값 교체. saturday라는 단어를 Sat으로 바꿈(대소문자 구분)
+'SQL Saturday - Basoton Rouge'.Replace('saturday', 'Sat')
+
+# Find 파일 찾기, 지정된 위치의 항목 가져오기. Recurse 옵션은 하위디렉토리 정보표시.
+Get-ChildItem -Path 'D:\' -Recurse
+
+# 파일 생성
+new-item new_file1.txt
+
+# foreach-object 각 개체 컬렉션의 각 항목에 대해 작업을 수행함. 스크립트 블록(-Process)내에서 변수를 사용하여 현재 객체를 나타냄. 이때 현재 객체는 '$_'로 표시함
+Get-Process | ForEach-Object {$_.ProcessName} #현재 컴퓨터의 프로세스 정보를 얻음. ProcessName 속성 값을 가져옴
+
+# 컴퓨터의 '최근 3개'의 이벤트 로그를 가져옴
+Get-EventLog System -Newest 3 |Format-List
+Get-EventLog System Where-Object{$_.Source -eq "EventLog"}
+Get-EventLog System -Source EventLog -Newest 10| Where-Object{$_.EventID -eq "6005"} |Format-List -Property * > 'D:\uptime.txt'
+
+$Events = Get-EventLog -LogName SYstem -Source EventLog -Newest 10
+$Events | ForEach-Object -Begin
+
+# 'LAPTOP-NKAT4RKA' Windows 컴퓨터로부터 Microsoft-Windows-WInlogn 이벤트 정보를 받아온다. 현재이후로부터 -7일. *+= 지정된 값을 기존 값에 추가함
+# Param([String]$Computer = (Read-Host Remote Computer name)) | cls
+$logs = get-eventlog system -ComputerName 'LAPTOP-NKAT4RKA' -source Microsoft-Windows-Winlogon -After (Get-Date).AddDays(-7);
+$res = @();
+foreach($log in $logs){
+    if($log.InstanceId -eq 7001){
+        $type = "Logon"}
+    elseif ($log.InstanceId -eq 7002) {
+        $type = "Logoff"}
+    else {Continue}
+    $res += New-Object PSObject -Property @{
+        Time = $log.TimeWritten
+        "Event" = $type
+        User = (New-Object System.Security.Principal.SecurityIdentifier $Log.ReplacementStrings[1]).Translate([System.Security.Principal.NTAccount])
+    }
+}
+$res | Out-GridView| cls 
+
+
+# PSCUstomObject 객체 표현 예제
+$test1 = [PSCustomObject]@{
+    "Name" = "Server1"
+    "ServiceTag" = "51ABC84"
+    "Vendor" = "Dell"
+}
+#기존 PSCustomObject 해시 테이블에 새로운 속성 추가
+$test1 | Add-Member -Name "OS" -Value "Windows" -MemberType NoteProperty
+#기존 PSCustomObject 해시 테이블의 동일한 속성에 데이터 추가
+$test2 = @()
+$test2 += New-Object PSCustomObject -Propert @{
+    "Name" = "Server1"
+    "ServiceTag" = "51ABC84"
+    "Vendor" = "Dell"
+}
+$test2 += New-Object PSCustomObject -Propert @{
+    "Name" = "Server2"
+    "ServiceTag" = "51A7767"
+    "Vendor" = "Windows"
+}
+
+# 비교 연산자. -eq/-ieq/-ceq: ~ 같음, -gt/-igt/-cge: ~ 보다 큼, -lt/-ilt/-clt ~ 보다 작음, -ne/-ine/-cne: ~와 같지 않음
+#Do Unil은 지정된 조건이 false인 동안 실행됨
+$number = Get-Random -Minimum 1 -Maximum 10
+do {
+    $guess = Read-Host -Prompt "What's youor number?"
+    if($guess -lt $number){
+        Write-Output 'Too low!'
+    }
+    elseif ($guess -gt $number) {
+        Write-Output 'Too High!'
+    }
+}
+until($guess -eq $number)
+
+# 매개변수 필수값 정의. Mandatory=$true는 스크립트 실행 시 변수에 값을 제공하지 않은 한 이 값을 요청. Mandatory 생략시 기본 값은 Mandatory=$false 이다. 따라서 생략해도 무방함.
+param (
+    [Parameter(Mandatory=$true)]
+    [String]$ComputerName,
+    [String]$OSversion="TEST",
+    [Parameter(Mandatory=$false)]
+    [String]$Vendor="Microsoft"
+)
+# 사용 예제. $ComputerName, $sourceinfo를 Mandatory=$false로 직접 입력하고, $EventID는 프롬프트로 입력받음. Get-EventLog로 입력한 EventID별로 로그 정보를 조회함. CmdletBinding은 파워쉘의 고급함수 기능을 켜는 동작. Param 변수 선언 전에 넣어주면됨./
+[CmdletBinding()]
+param (
+    [parameter(Mandatory=$false)]
+    [String]$ComputerName="LAPTOP-NKAT4RKA",
+    [parameter(Mandatory=$true)]
+    [int]$EventID,
+    [parameter(Mandatory=$false)]
+    [String]$sourceinfo="Microsoft-Windows*"
+)
+$eventinfo = Get-EventLog -LogName System -ComputerName $ComputerName -Source $sourceinfo |Where-Object EventID -eq $EventID|Select-Object -First 5|Format-List
+# 배열에 대한 필수 매개변수 정의 [String[]]$Selectregion=@("koreacentral","koreasouth")
+
+# 스크립트 수정이 자주 발생하는 경우, 스크립트 모듈에 fuction을 추가하여 해당 함수를 호출할 수 있음
+# 기본 값(ex)[String]$sourceinfo="Microsoft-Windows*")은 필수 값(Mandatory=$true)과 함께 사용할 수 없다. 매개 변수 유효성을 평가한다면 ValidateNotNullOrEmpty옵션을 사용할 수 있음
+# $env:COMPUTERNAME은 로컬 컴퓨터 이름을 자동으로 변환한다.
+
+function Get-SecurityEvent {
+    [CmdletBinding()]
+    param (
+        [ValidateNotNullOrEmpty()]
+        [String[]]$ComputerName=$env:COMPUTERNAME
+    )
+    Begin{
+        $EventID=Read-Host "이벤트 ID를 입력하세요."
+        $Logname=Read-Host "로그 이름을 입력하세요 ex)Application or System or Security"
+    }
+    process{
+        Get-EventLog -ComputerName $ComputerName -LogName $Logname | Where-Object -Property EventID -EQ $EventID | Select-Object -First 3 | Format-List
+    }
+    end{}
+}
+
+# function에 주석 추가. 실행 방법. 'get-help testSysnopsis -full'
+function testSysnopsis
+{
+    param(
+        [parameter(Mandatory=$false)]
+        [String]$test = "jaehwan"
+    )
+    <#
+    .synopsis
+    이 파일은 테스트 파일입니다.
+    .description
+    이 파일은 10월 27일 테스트로 작성되었습니다. 실제 사용 파일이 아닙니다.
+    .parameter test
+    이름을 저장할 변수
+    .example
+    'testSysnopsis' 입력
+    #>
+}
+
+# PSModulePath는 모듈 및 리소스를 검색하는 폴더위치가 포함됨. 현재 모듈위치는 $env:PSMdulePath에 저장. 세미클론(;)은 경로 구분, 클론(:)은 환경변수 구분. 일시적으로 위치 변경 시 아래와 같이 입력
+$env:PSModulePath=$env:PSModulePath+";D:\powershell\Module"
+
+# powershell 모듈 내보내기. 작성한 스크립트를 *.psm1로 저장할 것. 아래 export-modulemember로 내보낼 모듈을 지정. *.ps1로 저장 시 일부 모듈만 내보내기 기능 사용못함.
+Export-ModuleMember -Function Get-Test2, Get-Test1
+
+# 내보낸 모듈 읽어오기
+import-Module -Name D:\powershell\Module\EventSearch.psm1
+
+# switch문 1. switch(평가되는 부분), Running or Stopped 중 해당하는 블록이 동작을 수행한다.
+
+switch (Get-Service) {
+    {$_.status -eq "Running"}{"Running Service:"+$running_service.name}
+    {$_.status -eq "Stopped"}{"Stopped Service:"+$stopped_service.name}
+}
+
+
+# DSC 구성 스크립트 작성. DSC
+Configuration TestDSC{
+    param(
+        [parameter(Mandatory=$true)]
+        [string]$UserName
+    )
+    Node $computername{
+        DSC리소스 resourcename{
+            Ensure="Absent"|"Present"
+            Name="resourcename"
+            [dependsOn=[리소스 형식]리소스 이름]
+        }
+    }
+}
+
+# 주석은 모듈 실행 시 정보가 출력되지 않음. write-verbose라는 옵션을 추가하여 자세한 설명을 추가할 수 있음
+foreach ($Computer in $ComputerName){
+    Write-Verbose -Message "Attempting to perform some action on $Computer"
+    Write-Output $Computer
+}
+Module-Name -Verbose
+
+
+function Get-MrPSVersion {
+        $PSVersionTable  
+}
+
+# join 연사자. 데이터를 구분함. 구분을 없앤다면 $data -join $null
+$data=@(1,2,3,4)
+$data -join '-'
+
+
+# 운영 체제 중지, 다시시작
+Stop-Computer
+Restart-Computer -Force
+
+# 데스크톱 설정 표시
+Get-CimInstance -ClassName Win32_Desktop
+# 바이오스 정보 표시
+Get-CimInstance -ClassName Win32_BIOS
+# 컴퓨터 제조업체 및 모델 정보 표시
+Get-CimInstance -ClassName Win32_ComputerSystem
+# 컴퓨터 OS 정보 표시
+Get-CimInstance -ClassName Win32_OperatingSystem
+# 컴퓨터 로그온 세션 정보 표시
+Get-CimInstance -ClassName Win32_LogonSession
+# 컴퓨터 로컬 시간 가져오기
+Get-CimInstance -ClassName Win32_LocalTime
+
+# 서버 업타임 확인
+Get-Uptime -Since
+
+# powershell에서 Azure VM 명령어 실행. Portal에서 AzureVM Run-Command를 실행하는 방법 외에 다른 방안을 소개
+Invoke-AzVmRunCommand -ResourceGroup RGName -VMName VMName -CommandId 'RunPowerShellScript' -ScriptPath 'D:\powershell\Module\***.ps1'
+# 리소스 그룹 Windows OSType의 AzureVM 리스트를 조회
+$myAzVM = Get-AzVM -ResourceGroupName TestZone -Status |Where-Object {$_.PowerState -eq 'VM running' -and  $_.StorageProfile.OSDisk.OSType -eq 'Windows'}
+# Azure VM에 일괄 명령어 실행
+$myAzVM | ForEach-Object -Parallel {
+    $out = Invoke-AzVmRunCommand `
+    -ResourceGroup $_.ResourceGroupName `
+    -Name $_.Name `
+    -CommandId 'RunPowerShellScript' `
+    -ScriptPath 'D:\powershell\Module\TestScript.ps1'
+    #Formating the Output with the VM name
+    $output = $_.Name + " " + $out.Value[0].Message
+    $output
+}
+
+$myAzVM | ForEach-Object -Parallel {
+    $out = Invoke-AzVMRunCommand `
+        -ResourceGroupName $_.ResourceGroupName `
+        -Name $_.Name  `
+        -CommandId 'RunPowerShellScript' `
+        -ScriptPath D:\powershell\Module\TestScript.ps1
+    #Formating the Output with the VM name
+    $output = $_.Name + " " + $out.Value[0].Message
+    $output   
+}
+
+# github에서 파일 다운로드 방법. github URI는 git remote -v 명령어로 확인 or github 포탈에서 확인
+Invoke-WebRequest -Uri https://github.com/jaehwanjoa/powershell/blob/subdir01/221031_jaehwan_TestScript.ps1 -OutFile D:\powershell\jaehwan_TestScript.ps1
+
+
+# 기본 이메일 보내는 방법
+$Parameters = @{
+    FromAddress     = "jaehwanjoa@cloocus.com"
+    ToAddress       = "jaehwanjoa@cloocus.com"
+    Subject         = "SendGrid Plain Example"
+    Body            = "This is a plain text email"
+    Token           = "[sendgridtoken]"
+    FromName        = "Barbara"
+    ToName          = "Barbara"
+}
+Send-PSSendGridMail @Parameters
+
+
+# vscode 다시시작
+ctrl + shift + p -> Developer: Reload Windows 재시작
