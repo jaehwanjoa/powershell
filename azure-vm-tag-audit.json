@@ -3,19 +3,28 @@
             "tagName": {
             "type": "String",
             "metadata": {
-                "displayName": "태그 이름",
-                "description": "서비스 중요도"
+                "displayName": "태그 이름을 선택합니다",
+                "description": "태그 기준을 선택합니다. 주어진 값은 Important or Environment입니다"
+            },
+            "allowedValues": [
+                "Important",
+                "Environment"
+            ]
         },
             "tagValue": {
                 "type": "array",
                 "metadata": {
                     "displayName": "허용되는 보안 등급 태그 리스트 입니다.",
-                    "description": "서비스별 중요도를 정의(예: High, Medium, Low등)"
+                    "description": "선택한 기준의 태그 값을 지정합니다. Important인 경우(High, Medium, Low), Environment인 경우(Prod, Dev, QA, Test)"
                 },
                 "allowedValues": [
                     "High",
                     "Medium",
-                    "Low"
+                    "Low",
+                    "Prod",
+                    "Dev",
+                    "QA",
+                    "Test"
                 ]
             }
         },
@@ -37,4 +46,3 @@
             }
         }
     }
-}
