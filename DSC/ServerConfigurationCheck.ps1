@@ -5,7 +5,7 @@
     {
         WindowsFeatureSet WindowsFeatureSetExample
         {
-            Name                    = @("SMTP-Server", "Web-Server")
+            Name                    = @("WINS", "Web-Server")
             Ensure                  = 'Present'
             IncludeAllSubFeature    = $true
         }
