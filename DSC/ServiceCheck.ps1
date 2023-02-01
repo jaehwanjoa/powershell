@@ -25,5 +25,5 @@
     }
 }
 
-ServerConfigurationCheck -OutputPath D:\dsc 
+ServiceCheck -OutputPath D:\dsc 
 Start-DscConfiguration -Path D:\dsc -Wait -Force -Verbose
