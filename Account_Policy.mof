@@ -1,0 +1,48 @@
+﻿/*
+@TargetNode='localhost'
+@GeneratedBy=jaehwanjoa
+@GenerationDate=02/03/2023 01:01:06
+@GenerationHost=WIndowsServer20
+*/
+
+instance of MSFT_AccountPolicy as $MSFT_AccountPolicy1ref
+{
+ResourceID = "[AccountPolicy]AccountPolicies";
+ Minimum_Password_Length = 10;
+ Enforce_password_history = 5;
+ Maximum_Password_Age = 60;
+ SourceInfo = "D:\\config_AccountPoliicy.ps1::7::9::AccountPolicy";
+ Name = "PasswordPolicies";
+ ModuleName = "SecurityPolicyDsc";
+ Password_must_meet_complexity_requirements = "Enabled";
+ ModuleVersion = "2.10.0.0";
+
+ ConfigurationName = "AccountPolicies";
+
+};
+instance of OMI_ConfigurationDocument
+
+
+                    {
+ Version="2.0.0";
+ 
+
+                        MinimumCompatibleVersion = "1.0.0";
+ 
+
+                        CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
+ 
+
+                        Author="jaehwanjoa";
+ 
+
+                        GenerationDate="02/03/2023 01:01:06";
+ 
+
+                        GenerationHost="WIndowsServer20";
+ 
+
+                        Name="AccountPolicies";
+
+
+                    };
