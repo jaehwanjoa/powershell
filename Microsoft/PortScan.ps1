@@ -1,4 +1,4 @@
-function Invoke-PortScan {
+function Invoke-PortScan2 {
     <#
     .SYNOPSIS
     Scan IP-Addresses, Ports and HostNames
@@ -102,8 +102,8 @@ function Invoke-PortScan {
                     New-Object PSObject -Property @{
                     IPAddress = "$a.$b.$c.$d";
                     HostName = $hostName;
-                    Ports = $openPorts
-                    } | Format-List -Propert * | Out-File $LogPath -Force
+                    Ports = $openPorts;
+                    } |Format-Table -Propert IPAddress, HostName, @{e='Ports'; width = 190}#| Select-Object IPAddress, HostName, Ports |Format-Table -auto | Out-File $LogPath -Force
                 } Write-Host "Port Scan Success!! Check File $LogPath"
                 }
             }
@@ -113,5 +113,4 @@ function Invoke-PortScan {
         End {
         }
     }
-    
-    
+   
