@@ -7,7 +7,7 @@ function SecurityEvent {
     .parameter $ComputerName
     $env:COMPUTERNAME은 로컬 컴퓨터 네임으로 자동 변환됩니다.
     .example
-    'SecurityEvent'라고 커멘드를 입력하면 자동으로 실행됩니다. 
+    'SecurityEvent'라고 커멘드를 입력하면 자동으로 실행됩니다. *Log type이 Security인 경우 특별한 권한이 필요함
     #>
     [CmdletBinding()]
     param (
