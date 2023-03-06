@@ -1,5 +1,4 @@
-
-function Invoke-PortScan2 {
+function Invoke-PortScan {
     <#
     .SYNOPSIS
     Scan IP-Addresses, Ports and HostNames
@@ -57,7 +56,7 @@ function Invoke-PortScan2 {
     
             [int[]]
             #$Ports = @(21,22,23,53,69,71,80,98,110,139,111,389,443,445,1080,1433,2001,2049,3001,3128,5222,6667,6868,7777,7878,8080,1521,3306,3389,5801,5900,5555,5901),
-            $Ports = @(1..65535),
+            $Ports = @(1..10000),
 
             [int]
             $TimeOut = 100
@@ -104,7 +103,7 @@ function Invoke-PortScan2 {
                     IPAddress = "$a.$b.$c.$d";
                     HostName = $hostName;
                     Ports = $openPorts
-                    } | Select-Object IPAddress, HostName, Ports | Out-File $LogPath -Force
+                    } | Format-List -Propert * | Out-File $LogPath -Force
                 } Write-Host "Port Scan Success!! Check File $LogPath"
                 }
             }
