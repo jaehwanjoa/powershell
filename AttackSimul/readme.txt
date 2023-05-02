@@ -6,3 +6,5 @@ ssh-putty-brute [-h ip|ips.txt] [-p port] [-u user|users.txt] [-pw pass|pwdlist.
 #ex
 ssh-putty-brute -h 10.10.5.11 -p 22 -u root -pw (Get-Content .\passwordlist.txt)
 #현재 디렉토리에 putty.exe or plink.exe 파일이 필요합니다.
+#reference
+https://github.com/InfosecMatter/SSH-PuTTY-login-bruteforcer/
